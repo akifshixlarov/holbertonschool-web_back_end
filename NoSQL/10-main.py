@@ -1,34 +1,31 @@
 #!/usr/bin/env python3
-""" 10-main """
+"""
+Python script to provide some stats about Nginx logs stored in MongoDB
+"""
+
 from pymongo import MongoClient
-list_all = __import__('8-all').list_all
-update_topics = __import__('10-update_topics').update_topics
+
+def main():
+    """Display stats about Nginx logs"""
+    client = MongoClient()  # Default connection to localhost:27017
+    db = client.logs
+    collection = db.nginx
+
+    # Total number of logs
+    total_logs = collection.count_documents({})
+    print(f"{total_logs} logs")
+
+    # Methods count
+    methods = ["GET", "POST", "PUT", "PATCH", "DELETE"]
+    print("Methods:")
+    for method in methods:
+        count = collection.count_documents({"method": method})
+        print(f"\tmethod {method}: {count}")
+
+    # Number of GET /status requests
+    status_check = collection.count_documents({"method": "GET", "path": "/status"})
+    print(f"{status_check} status check")
+
 
 if __name__ == "__main__":
-    client = MongoClient('mongodb://127.0.0.1:27017')
-    school_collection = client.my_db.school
-    update_topics(
-        school_collection, "Holberton school", [
-            "Sys admin", "AI", "Algorithm"])
-
-    schools = list_all(school_collection)
-    for school in schools:
-        print(
-            "[{}] {} {}".format(
-                school.get('_id'),
-                school.get('name'),
-                school.get(
-                    'topics',
-                    "")))
-
-    update_topics(school_collection, "Holberton school", ["iOS"])
-
-    schools = list_all(school_collection)
-    for school in schools:
-        print(
-            "[{}] {} {}".format(
-                school.get('_id'),
-                school.get('name'),
-                school.get(
-                    'topics',
-                    "")))
+    main()
